@@ -1,42 +1,54 @@
+#include "matrix.h"
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char* argv[]) {
-    int opt;
-    char* prefix = NULL;
+int main(int argc, char *argv[]) {
+    int opt = 0;
+    char *prefix_arg = NULL;
     while ((opt = getopt(argc, argv, "hvo:")) != -1) {
         switch (opt) {
-            case 'h':
-                printf("Use: conway i M N inputfile [-o outputprefix]\n");
-                return 0;
-            case 'v':
-                printf("conway 0.0.1\n");
-                return 0;
-            case 'o':
-                prefix = optarg;
+        case 'h':
+            printf("Use: conway i M N inputfile [-o outputprefix]\n");
+            return 0;
+        case 'v':
+            printf("conway 0.0.1\n");
+            return 0;
+        case 'o':
+            prefix_arg = optarg;
         }
     }
 
-    int I = atoi(argv[optind]);
-    int M = atoi(argv[++optind]);
-    int N = atoi(argv[++optind]);
-    if (!I || !M || !N)
+    size_t I = atoi(argv[optind]);
+    size_t M = atoi(argv[++optind]);
+    size_t N = atoi(argv[++optind]);
+    if (!I || !M || !N) {
         fprintf(stderr, "The arguments are not positive numbers\n");
+        return 1;
+    }
 
-    char* matrix_name = argv[++optind];
-    FILE* matrix = fopen(matrix_name, "r");
-    if (!matrix) fprintf(stderr, "The matrix file does not exist\n");
+    char *matrix_name = argv[++optind];
+    char *prefix = prefix_arg ? prefix_arg : matrix_name;
+
+    matrix_t *matrix = matrix_create(matrix_name, M, N);
+    if (!matrix) {
+        fprintf(stderr, "Error creating the matrix\n");
+        return 1;
+    }
 
     printf("Reading initial state\n");
     for (int i = 0; i < I; i++) {
-        char fname[1024];
-        sprintf(fname, "%s_%d.pbm", prefix ? prefix : matrix_name, i);
-        FILE* f = fopen(fname, "w");
-        printf("Saving %s\n", fname);
-        fclose(f);
+        matrix_update(matrix);
+        matrix_print(matrix);
+        if (!matrix_save(matrix, prefix)) {
+            fprintf(stderr, "Error saving state %03d\n", i);
+            return 1;
+        } else
+            printf("Saving state %03d\n", i);
     }
+
+    matrix_destroy(matrix);
     printf("Done\n");
-    fclose(matrix);
+    return 0;
 }
