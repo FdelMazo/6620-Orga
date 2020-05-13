@@ -39,13 +39,12 @@ int main(int argc, char *argv[]) {
 
     printf("Reading initial state\n");
     for (int i = 0; i < I; i++) {
-        matrix_update(matrix);
-        matrix_print(matrix);
-        if (!matrix_save(matrix, prefix)) {
+        if (!matrix_save(matrix, prefix))
             fprintf(stderr, "Error saving state %03d\n", i);
-            return 1;
-        } else
+        else
             printf("Saving state %03d\n", i);
+        matrix_print(matrix, stdout);
+        matrix_update(matrix);
     }
 
     matrix_destroy(matrix);

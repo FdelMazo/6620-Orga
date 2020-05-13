@@ -2,7 +2,7 @@
 #define MATRIX_H
 
 #include <stdbool.h>
-#include <stdlib.h>
+#include <stdio.h>
 
 typedef struct {
     bool **table;
@@ -15,6 +15,6 @@ matrix_t *matrix_create(char *filename, size_t rows, size_t cols);
 void matrix_update(matrix_t *self);
 bool matrix_save(matrix_t *self, char *prefix);
 void matrix_destroy(matrix_t *self);
-void matrix_print(matrix_t *self);
+void matrix_print(matrix_t *self, FILE *steam);
 
 #endif // MATRIX_H
