@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
         if (!matrix_save(matrix, prefix))
             fprintf(stderr, "Error saving state %03d\n", i);
         else
-            printf("Saving state %03d\n", i);
+            printf("Saving state %s_%03d.pbm\n", prefix, i);
         matrix_print(matrix, stdout);
         matrix_update(matrix);
     }

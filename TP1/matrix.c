@@ -8,15 +8,14 @@ typedef unsigned int uint;
 
 uint vecinos(bool **table, uint i, uint j, uint M, uint N) {
     int n = 0;
-    if (i == M - 1 || i == 0 || j == N - 1 || j == 0) return 0;
-    if (table[i - 1][j - 1]) n++;
-    if (table[i - 1][j]) n++;
-    if (table[i - 1][j + 1]) n++;
-    if (table[i][j - 1]) n++;
-    if (table[i][j + 1]) n++;
-    if (table[i + 1][j - 1]) n++;
-    if (table[i + 1][j]) n++;
-    if (table[i + 1][j + 1]) n++;
+    if (table[(i - 1 + M) % M][(j - 1 + N) % N]) n++;
+    if (table[(i - 1 + M) % M][j]) n++;
+    if (table[(i - 1 + M) % M][(j + 1) % N]) n++;
+    if (table[i][(j - 1 + N) % N]) n++;
+    if (table[i][(j + 1) % N]) n++;
+    if (table[(i + 1) % M][(j - 1 + N) % N]) n++;
+    if (table[(i + 1) % M][j]) n++;
+    if (table[(i + 1) % M][(j + 1) % N]) n++;
     return n;
 }
 
