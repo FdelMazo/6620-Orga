@@ -96,7 +96,7 @@ bool matrix_save(matrix_t *self, char *prefix) {
     FILE *f;
     if (!(f = fopen(fname, "w"))) return false;
     fprintf(f, "P1\n");
-    fprintf(f, "%ld %ld\n", self->rows, self->cols);
+    fprintf(f, "%ld %ld\n", self->cols, self->rows);
     matrix_print(self, f);
     fclose(f);
     return true;
