@@ -30,6 +30,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    if ((argc != 5 && argc != 7) || (argc == 7 && !prefix_arg)) {
+        fprintf(stderr, "Invalid arguments. Use conway -h to see valid examples. \n");
+        return 1;
+    }
+
     size_t I = atoi(argv[optind]);
     size_t M = atoi(argv[++optind]);
     size_t N = atoi(argv[++optind]);
