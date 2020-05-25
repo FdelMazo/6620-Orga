@@ -5,7 +5,7 @@
 #include <stdio.h>
 
 typedef struct {
-    bool **table;
+    char *table;
     size_t state;
     size_t rows;
     size_t cols;

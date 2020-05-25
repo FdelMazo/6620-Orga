@@ -6,40 +6,43 @@
 
 typedef unsigned int uint;
 
-uint vecinos(bool **table, uint i, uint j, uint M, uint N) {
+uint vecinos(char *table, uint i, uint j, uint M, uint N) {
     int n = 0;
-    if (table[(i - 1 + M) % M][(j - 1 + N) % N]) n++;
-    if (table[(i - 1 + M) % M][j]) n++;
-    if (table[(i - 1 + M) % M][(j + 1) % N]) n++;
-    if (table[i][(j - 1 + N) % N]) n++;
-    if (table[i][(j + 1) % N]) n++;
-    if (table[(i + 1) % M][(j - 1 + N) % N]) n++;
-    if (table[(i + 1) % M][j]) n++;
-    if (table[(i + 1) % M][(j + 1) % N]) n++;
+    if (table[((i - 1 + M) % M) + M * ((j - 1 + N) % N)] == '1') n++;
+    if (table[((i - 1 + M) % M) + M * j] == '1') n++;
+    if (table[((i - 1 + M) % M) + M * ((j + 1) % N)] == '1') n++;
+    if (table[i + M * ((j - 1 + N) % N)] == '1') n++;
+    if (table[i + M * ((j + 1) % N)] == '1') n++;
+    if (table[((i + 1) % M) + M * ((j - 1 + N) % N)] == '1') n++;
+    if (table[((i + 1) % M) + M * j] == '1') n++;
+    if (table[((i + 1) % M) + M * ((j + 1) % N)] == '1') n++;
     return n;
 }
 
-void table_turn_on(bool **self, int i, int j) { self[i][j] = true; }
-void table_turn_off(bool **self, int i, int j) { self[i][j] = false; }
+void table_turn_on(char *self, int i, int j, int rows) {
+    self[i + rows * j] = '1';
+}
+void table_turn_off(char *self, int i, int j, int rows) {
+    self[i + rows * j] = '0';
+}
 
-void table_destroy(bool **self, int rows) {
-    iterate_rows { free(self[i]); }
+void table_destroy(char *self, int rows) {
     free(self);
 }
 
-bool **table_create(int rows, int cols) {
-    bool **table = calloc(rows, sizeof(bool *));
-    iterate_rows {
-        table[i] = calloc(cols, sizeof(bool *));
-        iterate_cols { table_turn_off(table, i, j); }
-    }
-    return table;
+char *table_create(int rows, int cols) {
+    char *mat = (char *)malloc(rows * cols * sizeof(char));
+    return mat;
 }
 
 void matrix_print(matrix_t *self, FILE *stream) {
     int rows = self->rows, cols = self->cols;
     iterate_rows {
-        iterate_cols { fprintf(stream, "%d ", self->table[i][j]); }
+        iterate_cols {
+            int offset = i + rows * j;
+            int cell_value = self->table[offset] ? self->table[offset] - '0' : 0;
+            fprintf(stream, "%d ", cell_value);
+        }
         fprintf(stream, "\n");
     }
 }
@@ -61,7 +64,7 @@ matrix_t *matrix_create(char *filename, size_t rows, size_t cols) {
     }
     int i = 0, j = 0;
     while ((fscanf(file_matrix, "%d %d\n", &i, &j)) != EOF) {
-        table_turn_on(matrix->table, i, j);
+        table_turn_on(matrix->table, i, j, rows);
     }
     fclose(file_matrix);
 
@@ -72,17 +75,18 @@ matrix_t *matrix_create(char *filename, size_t rows, size_t cols) {
 }
 
 void matrix_update(matrix_t *self) {
-    bool **new_table = table_create(self->rows, self->cols);
-    int rows = self->rows, cols = self->cols;
+    char *new_table = table_create(self->rows, self->cols);
+    int rows = self->rows, cols = self->cols, offset;
 
     iterate_rows {
         iterate_cols {
-            new_table[i][j] = self->table[i][j];
+            offset = i + rows * j;
+            new_table[offset] = self->table[offset];
             uint n_vecinos = vecinos(self->table, i, j, self->rows, self->cols);
-            if (self->table[i][j] && (n_vecinos < 2 || n_vecinos > 3))
-                table_turn_off(new_table, i, j);
-            else if (!self->table[i][j] && n_vecinos == 3)
-                table_turn_on(new_table, i, j);
+            if ((self->table[offset] == '1') && (n_vecinos < 2 || n_vecinos > 3))
+                table_turn_off(new_table, i, j, rows);
+            else if ((!self->table[offset] || (self->table[offset] == '0')) && n_vecinos == 3)
+                table_turn_on(new_table, i, j, rows);
         }
     }
     table_destroy(self->table, self->rows);
