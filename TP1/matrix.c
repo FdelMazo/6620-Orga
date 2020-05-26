@@ -8,14 +8,14 @@ typedef unsigned int uint;
 
 uint vecinos(char *table, uint i, uint j, uint M, uint N) {
     int n = 0;
-    if (table[((i - 1 + M) % M) + M * ((j - 1 + N) % N)] == '1') n++;
-    if (table[((i - 1 + M) % M) + M * j] == '1') n++;
-    if (table[((i - 1 + M) % M) + M * ((j + 1) % N)] == '1') n++;
-    if (table[i + M * ((j - 1 + N) % N)] == '1') n++;
-    if (table[i + M * ((j + 1) % N)] == '1') n++;
-    if (table[((i + 1) % M) + M * ((j - 1 + N) % N)] == '1') n++;
-    if (table[((i + 1) % M) + M * j] == '1') n++;
-    if (table[((i + 1) % M) + M * ((j + 1) % N)] == '1') n++;
+    if (table[((i - 1 + M) % M) * M + ((j - 1 + N) % N)] == '1') n++;
+    if (table[((i - 1 + M) % M) * M + j] == '1') n++;
+    if (table[((i - 1 + M) % M) * M + ((j + 1) % N)] == '1') n++;
+    if (table[i * M + ((j - 1 + N) % N)] == '1') n++;
+    if (table[i * M + ((j + 1) % N)] == '1') n++;
+    if (table[((i + 1) % M) * M + ((j - 1 + N) % N)] == '1') n++;
+    if (table[((i + 1) % M) * M + j] == '1') n++;
+    if (table[((i + 1) % M) * M + ((j + 1) % N)] == '1') n++;
     return n;
 }
 
