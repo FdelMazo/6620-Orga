@@ -23,10 +23,10 @@
 
 .text
 .align 2
-.globl es_vecino
-.ent es_vecino
+.globl tiene_vecino
+.ent tiene_vecino
 
-es_vecino:
+tiene_vecino:
 	subu sp, sp, EV_STACK_SIZE
 	/* SRA */
 	sw gp, EV_SRA_GP(sp)
@@ -97,4 +97,4 @@ fin:
     addiu sp, sp, EV_STACK_SIZE
     jr ra
     
-.end es_vecino
+.end tiene_vecino

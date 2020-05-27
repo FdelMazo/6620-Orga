@@ -32,7 +32,7 @@
 
 .text
 .align 2
-.extern es_vecino
+.extern tiene_vecino
 .globl vecinos
 .ent vecinos
 
@@ -79,7 +79,7 @@ top_left:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu t0, t0, v0
@@ -94,7 +94,7 @@ top:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu t0, t0, v0
@@ -110,7 +110,7 @@ top_right:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu t0, t0, v0
@@ -125,7 +125,7 @@ left:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu t0, t0, v0
@@ -140,7 +140,7 @@ right:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu t0, t0, v0
@@ -156,7 +156,7 @@ bottom_left:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu t0, t0, v0
@@ -171,7 +171,7 @@ bottom:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu t0, t0, v0
@@ -187,7 +187,7 @@ bottom_right:
 	lw t0, V_LTA_N(fp) 	/*int m in ABA*/
 	sw t0, V_ABA_N(fp) 
 
-	jal es_vecino
+	jal tiene_vecino
 
 	lw t0, V_LTA_NEIGHBOURS(fp)
 	addu v0, t0, v0
