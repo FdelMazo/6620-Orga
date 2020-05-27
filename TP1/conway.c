@@ -49,9 +49,9 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    size_t I = atoi(argv[optind]);
-    size_t M = atoi(argv[++optind]);
-    size_t N = atoi(argv[++optind]);
+    unsigned int I = atoi(argv[optind]);
+    unsigned int M = atoi(argv[++optind]);
+    unsigned int N = atoi(argv[++optind]);
     if (!I || !M || !N) {
         fprintf(stderr, "The arguments are not positive numbers\n");
         return 1;

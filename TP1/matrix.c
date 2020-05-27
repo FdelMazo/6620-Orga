@@ -4,9 +4,11 @@
 #define iterate_rows for (int i = 0; i < rows; i++)
 #define iterate_cols for (int j = 0; j < cols; j++)
 
-typedef unsigned int uint;
 
-uint vecinos(char *table, uint i, uint j, uint M, uint N) {
+#ifndef USE_MIPS
+
+unsigned int vecinos(unsigned char *table, unsigned int i, 
+    unsigned int j, unsigned int M, unsigned int N) {
     int n = 0;
     if (table[((i - 1 + M) % M) * M + ((j - 1 + N) % N)] == '1') n++;
     if (table[((i - 1 + M) % M) * M + j] == '1') n++;
@@ -19,19 +21,21 @@ uint vecinos(char *table, uint i, uint j, uint M, uint N) {
     return n;
 }
 
-void table_turn_on(char *self, int i, int j, int rows) {
-    self[i + rows * j] = '1';
+#endif
+
+void table_turn_on(unsigned char *self, int i, int j, int rows) {
+    self[i * rows + j] = '1';
 }
-void table_turn_off(char *self, int i, int j, int rows) {
-    self[i + rows * j] = '0';
+void table_turn_off(unsigned char *self, int i, int j, int rows) {
+    self[i * rows + j] = '0';
 }
 
-void table_destroy(char *self, int rows) {
+void table_destroy(unsigned char *self, int rows) {
     free(self);
 }
 
-char *table_create(int rows, int cols) {
-    char *mat = (char *)malloc(rows * cols * sizeof(char));
+unsigned char *table_create(int rows, int cols) {
+    unsigned char *mat = malloc(rows * cols * sizeof(unsigned char));
     return mat;
 }
 
@@ -39,7 +43,7 @@ void matrix_print(matrix_t *self, FILE *stream) {
     int rows = self->rows, cols = self->cols;
     iterate_rows {
         iterate_cols {
-            int offset = i + rows * j;
+            int offset = i * rows + j;
             int cell_value = self->table[offset] ? self->table[offset] - '0' : 0;
             fprintf(stream, "%d ", cell_value);
         }
@@ -47,7 +51,7 @@ void matrix_print(matrix_t *self, FILE *stream) {
     }
 }
 
-matrix_t *matrix_create(char *filename, size_t rows, size_t cols) {
+matrix_t *matrix_create(char *filename, unsigned int rows, unsigned int cols) {
     matrix_t *matrix;
     if (!(matrix = malloc(sizeof(matrix_t)))) return NULL;
 
@@ -75,14 +79,14 @@ matrix_t *matrix_create(char *filename, size_t rows, size_t cols) {
 }
 
 void matrix_update(matrix_t *self) {
-    char *new_table = table_create(self->rows, self->cols);
+    unsigned char *new_table = table_create(self->rows, self->cols);
     int rows = self->rows, cols = self->cols, offset;
 
     iterate_rows {
         iterate_cols {
-            offset = i + rows * j;
+            offset = i * rows + j;
             new_table[offset] = self->table[offset];
-            uint n_vecinos = vecinos(self->table, i, j, self->rows, self->cols);
+            unsigned int n_vecinos = vecinos(self->table, i, j, self->rows, self->cols);
             if ((self->table[offset] == '1') && (n_vecinos < 2 || n_vecinos > 3))
                 table_turn_off(new_table, i, j, rows);
             else if ((!self->table[offset] || (self->table[offset] == '0')) && n_vecinos == 3)
@@ -96,11 +100,11 @@ void matrix_update(matrix_t *self) {
 
 bool matrix_save(matrix_t *self, char *prefix) {
     char fname[256];
-    sprintf(fname, "%s_%03ld.pbm", prefix, self->state);
+    sprintf(fname, "%s_%03d.pbm", prefix, self->state);
     FILE *f;
     if (!(f = fopen(fname, "w"))) return false;
     fprintf(f, "P1\n");
-    fprintf(f, "%ld %ld\n", self->cols, self->rows);
+    fprintf(f, "%ud %ud\n", self->cols, self->rows);
     matrix_print(self, f);
     fclose(f);
     return true;

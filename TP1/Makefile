@@ -17,9 +17,9 @@ run: conway
 	./$< $(STATES) $(ROWS) $(COLS) $(FILE)
 	for f in $(FILE)_*.pbm; do pnmscale $(SCALING_FACTOR) $$f | pgmtopbm | tee $${f%.pbm}_out.pbm; done > /dev/null 2>&1
 	ffmpeg -y -r $(SPEED) -i "$(FILE)_%03d_out.pbm" "$(FILE).gif" -hide_banner
-
-conway: conway.o matrix.o
-	$(CC) $(CFLAGS) $^ -o $@
+	rm -f *_out.pbm
+conway: conway.c matrix.c matrix.h vecinos.S tiene_vecino.S
+	$(CC) $(CFLAGS) *.c *.S -DUSE_MIPS -o $@ || $(CC) $(CFLAGS) *.c -o $@
 
 clean:
-	rm -f conway *.pbm *.gif
+	rm -f conway *.pbm *.gif *.o
