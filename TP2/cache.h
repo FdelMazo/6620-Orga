@@ -1,10 +1,6 @@
 #ifndef CACHE_H_
 #define CACHE_H_
 
-#define MAIN_MEMORY_SIZE 65536
-#define CACHE_SIZE 4096
-#define BLOCK_SIZE 128
-
 void init();
 unsigned int get_offset(unsigned int address);
 unsigned int find_set(unsigned int address);
