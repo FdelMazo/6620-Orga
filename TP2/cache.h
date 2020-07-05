@@ -1,6 +1,10 @@
 #ifndef CACHE_H_
 #define CACHE_H_
 
+#include <math.h>
+
+#define MAIN_MEMORY_SIZE 65536
+
 void init();
 unsigned int get_offset(unsigned int address);
 unsigned int find_set(unsigned int address);
