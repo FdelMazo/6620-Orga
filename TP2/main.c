@@ -44,7 +44,7 @@ static int read_commands(const char *filename) {
             get_miss_rate();
         } else {
             fprintf(stderr, "Error: invalid line.\n");
-            return 1;
+            result = 1;
         }
 
         if (result == 1) return result;
@@ -60,11 +60,10 @@ static int read_address(char *line) {
         fprintf(stderr, "Error reading address.\n");
         return 1;
     } else if (address >= MAIN_MEMORY_SIZE) {
-        fprintf(stderr, "Error: the address specified is bigger than the size "
-                        "of the main memory.\n");
-        return 1;
+        fprintf(stderr, "ERR: ADDR_TOO_BIG [%d]\n", address);
+    } else {
+        read_byte(address);
     }
-    read_byte(address);
     return 0;
 }
 
@@ -76,10 +75,9 @@ static int write_in_address(char *line) {
         fprintf(stderr, "Error reading address and value.\n");
         return 1;
     } else if (address >= MAIN_MEMORY_SIZE) {
-        fprintf(stderr, "Error: the address specified is bigger than the size "
-                        "of the main memory.\n");
-        return 1;
+        fprintf(stderr, "ERR: ADDR_TOO_BIG [%d]\n", address);
+    } else {
+        write_byte(address, value);
     }
-    write_byte(address, value);
     return 0;
 }

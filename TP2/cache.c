@@ -80,7 +80,6 @@ unsigned char read_byte(unsigned int address) {
     int way = compare_tag(tag, set);
     unsigned char byte_read;
     bool is_in_cache = way >= 0;
-
     _update_blocks_counter_from_set(set);
     if (!is_in_cache) {
         unsigned int block_num = _get_block(address);

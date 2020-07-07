@@ -10,7 +10,7 @@
 #define CACHE_SETS 8
 #define N_WAYS 4
 #define INVALID 0
-#define VALID 0
+#define VALID 1
 
 #define BLOCKS_COUNT (CACHE_SIZE / N_WAYS / BLOCK_SIZE)
 #define ADDRESS_SIZE 16
