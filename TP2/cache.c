@@ -3,17 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define CACHE_SIZE 4096
-#define BLOCK_SIZE 128
-#define CACHE_SETS 8
-#define N_WAYS 4
-
-#define BLOCKS_COUNT (CACHE_SIZE / N_WAYS / BLOCK_SIZE)
-#define ADDRESS_SIZE 16
-#define OFFSET_SIZE (log(BLOCK_SIZE) / log(2))
-#define INDEX_SIZE (log(CACHE_SETS) / log(2))
-#define TAG_SIZE (ADDRESS_SIZE - INDEX_SIZE - OFFSET_SIZE)
-
 typedef struct {
     unsigned char data[MAIN_MEMORY_SIZE];
 } main_memory_t;
@@ -45,7 +34,7 @@ void init() {
     printf("Executing init()\n");
     memset(main_memory.data, 0, MAIN_MEMORY_SIZE);
 
-    memset(cache.blocks, 0, sizeof(cache.blocks));
+    memset(cache.blocks, INVALID_BLOCK, sizeof(cache.blocks));
     cache.miss_count = 0;
     cache.hit_count = 0;
 }
@@ -54,12 +43,6 @@ unsigned int get_offset(unsigned int address) { return address % BLOCK_SIZE; }
 
 unsigned int find_set(unsigned int address) {
     return address / BLOCK_SIZE % CACHE_SETS;
-}
-
-float get_miss_rate() {
-    if (cache.miss_count == 0) return 0;
-    int total_count = cache.miss_count + cache.hit_count;
-    return cache.miss_count / (float)total_count;
 }
 
 unsigned int select_oldest(unsigned int setnum) {
@@ -96,6 +79,20 @@ void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set) {
     block.counter = 0;
 }
 
+/*Como la cache esta implementada con Write Through y no-write allocate, si
+escribimos en la cache, esto nos garantiza que el bloque correspondiente a la
+direccion se encuentra en la misma. */
+void write_tocache(unsigned int address, unsigned char value) {
+    unsigned int tag = _get_tag(address);
+    unsigned int set = find_set(address);
+    unsigned int offset = get_offset(address);
+    int way = compare_tag(tag, set);
+    cache_block_t block = cache.blocks[set][way];
+    block = block;
+    block.data[offset] = value;
+    block.counter = 0;
+}
+
 unsigned char read_byte(unsigned int address) {
     unsigned int tag = _get_tag(address);
     unsigned int set = find_set(address);
@@ -118,19 +115,6 @@ unsigned char read_byte(unsigned int address) {
     return byte_read;
 }
 
-/*Como la cache esta implementada con Write Through y no-write allocate, si
-escribimos en la cache, esto nos garantiza que el bloque correspondiente a la
-direccion se encuentra en la misma. */
-void write_tocache(unsigned int address, unsigned char value) {
-    unsigned int tag = _get_tag(address);
-    unsigned int set = find_set(address);
-    unsigned int offset = get_offset(address);
-    int way = compare_tag(tag, set);
-    cache_block_t block = cache.blocks[set][way];
-    block.data[offset] = value;
-    block.counter = 0;
-}
-
 void write_byte(unsigned int address, unsigned char value) {
     unsigned int tag = _get_tag(address);
     unsigned int set = find_set(address);
@@ -143,6 +127,12 @@ void write_byte(unsigned int address, unsigned char value) {
         write_tocache(address, value);
     }
     _update_cache_count(is_in_cache);
+}
+
+float get_miss_rate() {
+    if (cache.miss_count == 0) return 0;
+    int total_count = cache.miss_count + cache.hit_count;
+    return cache.miss_count / (float)total_count;
 }
 
 /* Funciones auxiliares */
