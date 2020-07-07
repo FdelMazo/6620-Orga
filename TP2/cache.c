@@ -52,11 +52,13 @@ int compare_tag(unsigned int tag, unsigned int set) {
 
 void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set) {
     int block_starting_address = blocknum * BLOCK_SIZE;
-    cache_block_t block = cache.blocks[set][way];
-    memcpy(&main_memory.data[block_starting_address], block.data, BLOCK_SIZE);
-    block.valid = VALID;
-    block.tag = _get_tag(block_starting_address);
-    block.counter = 0;
+    cache_block_t *block = &cache.blocks[set][way];
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        block->data[i] = main_memory.data[block_starting_address + i];
+    }
+    block->valid = VALID;
+    block->tag = _get_tag(block_starting_address);
+    block->counter = 0;
 }
 
 /* Como la cache esta implementada con Write Through y no-write allocate, si
@@ -80,15 +82,14 @@ unsigned char read_byte(unsigned int address) {
     bool is_in_cache = way >= 0;
 
     _update_blocks_counter_from_set(set);
-    if (is_in_cache) {
-        unsigned int offset = get_offset(address);
-        byte_read = _read_from_cache(set, way, offset);
-    } else {
+    if (!is_in_cache) {
         unsigned int block_num = _get_block(address);
         way = select_oldest(set);
         read_tocache(block_num, way, set);
-        byte_read = main_memory.data[address];
     }
+
+    unsigned int offset = get_offset(address);
+    byte_read = _read_from_cache(set, way, offset);
     _update_cache_count(is_in_cache);
 
     printf("READ: %d -> %u \n", address, byte_read);
@@ -124,6 +125,7 @@ unsigned char _read_from_cache(unsigned int set, unsigned int way,
                                unsigned int offset) {
     cache_block_t block = cache.blocks[set][way];
     block.counter = 0;
+
     return block.data[offset];
 }
 
