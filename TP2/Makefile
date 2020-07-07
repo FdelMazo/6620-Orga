@@ -5,5 +5,13 @@ CFLAGS += -Wtype-limits -Wshadow -Wno-unused-variable
 CFLAGS += -Wpointer-arith -Wunreachable-code -Wformat=2
 CFLAGS += -pedantic
 
-main: main.c cache.h cache.c
-	$(CC) $(CFLAGS) $^ -o $@
+all: build
+	./cache pruebas/prueba1.mem
+	./cache pruebas/prueba2.mem
+	./cache pruebas/prueba3.mem
+	./cache pruebas/prueba4.mem
+	./cache pruebas/prueba5.mem
+	./cache pruebas/prueba6.mem
+
+build: main.c cache.h cache.c
+	$(CC) $(CFLAGS) $^ -o cache
