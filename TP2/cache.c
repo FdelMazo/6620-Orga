@@ -1,163 +1,101 @@
 #include "cache.h"
-#include <string.h>
 #include <stdio.h>
-#include <stdbool.h>
-
-#define CACHE_SIZE 4096
-#define BLOCK_SIZE 128
-#define CACHE_SETS 8
-#define N_WAYS 4
-
-#define BLOCKS_COUNT (CACHE_SIZE / N_WAYS / BLOCK_SIZE)
-#define ADDRESS_SIZE 16
-#define OFFSET_SIZE (log(BLOCK_SIZE) / log(2))
-#define INDEX_SIZE (log(CACHE_SETS) / log(2))
-#define TAG_SIZE (ADDRESS_SIZE - INDEX_SIZE - OFFSET_SIZE)
-
-
-typedef struct
-{
-    unsigned char data[MAIN_MEMORY_SIZE];
-} main_memory_t;
-
-
-typedef struct
-{
-    unsigned int tag;
-    int counter;
-    bool valid;
-    unsigned char data[BLOCK_SIZE];
-} cache_block_t;
-
-
-typedef struct
-{
-    cache_block_t blocks[CACHE_SETS][N_WAYS];
-    int miss_count;
-    int hit_count;
-} cache_t;
-
+#include <string.h>
 
 unsigned int _get_tag(unsigned int address);
 void _update_cache_count(bool data_is_in_cache);
 unsigned int _get_block(unsigned int address);
-unsigned char _read_from_cache(unsigned int set, unsigned int way, unsigned int offset);
+unsigned char _read_from_cache(unsigned int set, unsigned int way,
+                               unsigned int offset);
 void _update_blocks_counter_from_set(unsigned int set);
-
 
 main_memory_t main_memory;
 cache_t cache;
 
-
-void init()
-{
-    printf("Executing init()\n");
+void init() {
+    printf("INIT \n");
     memset(main_memory.data, 0, MAIN_MEMORY_SIZE);
 
-    memset(cache.blocks, 0, sizeof(cache.blocks));
+    memset(cache.blocks, INVALID, sizeof(cache.blocks));
     cache.miss_count = 0;
     cache.hit_count = 0;
 }
 
-unsigned int get_offset(unsigned int address)
-{
-    return address % BLOCK_SIZE;
-}
+unsigned int get_offset(unsigned int address) { return address % BLOCK_SIZE; }
 
-unsigned int find_set(unsigned int address)
-{
+unsigned int find_set(unsigned int address) {
     return address / BLOCK_SIZE % CACHE_SETS;
 }
 
-float get_miss_rate()
-{
-    if (cache.miss_count == 0) return 0;
-    int total_count = cache.miss_count + cache.hit_count;
-    return cache.miss_count / (float)total_count;
-}
-
-unsigned int select_oldest(unsigned int setnum) 
-{
-    cache_block_t* blocks_in_set = cache.blocks[setnum];
-    cache_block_t oldest_block = blocks_in_set[0];
-    unsigned int oldest_block_way = 0;
-    for (size_t i = 1; i < N_WAYS; i++) 
-    {
-        if (oldest_block.counter < blocks_in_set[i].counter) 
-        { 
-            oldest_block = blocks_in_set[i];
-            oldest_block_way = i;
+unsigned int select_oldest(unsigned int setnum) {
+    cache_block_t *blocks_in_set = cache.blocks[setnum];
+    unsigned int oldest = 0;
+    for (size_t i = 1; i < N_WAYS; i++) {
+        if (blocks_in_set[oldest].counter < blocks_in_set[i].counter) {
+            oldest = i;
         }
     }
-    return oldest_block_way;
-
+    return oldest;
 }
 
-int compare_tag(unsigned int tag, unsigned int set) 
-{
-    cache_block_t* blocks_in_set = cache.blocks[set];
+int compare_tag(unsigned int tag, unsigned int set) {
+    cache_block_t *blocks_in_set = cache.blocks[set];
     cache_block_t block;
-    for (int i = 0; i < N_WAYS; i++) 
-    {
+    for (int i = 0; i < N_WAYS; i++) {
         block = blocks_in_set[i];
-        if (block.valid && block.tag == tag) 
-        {
+        if (block.valid && block.tag == tag) {
             return i;
         }
     }
     return -1;
 }
 
-void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set) 
-{
+void read_tocache(unsigned int blocknum, unsigned int way, unsigned int set) {
     int block_starting_address = blocknum * BLOCK_SIZE;
-    cache_block_t block = cache.blocks[set][way];
-    memcpy(&main_memory.data[block_starting_address], block.data, BLOCK_SIZE);
-    block.valid = true;
-    block.tag = _get_tag(block_starting_address);
-    block.counter = 0;
+    cache_block_t *block = &cache.blocks[set][way];
+    for (int i = 0; i < BLOCK_SIZE; i++) {
+        block->data[i] = main_memory.data[block_starting_address + i];
+    }
+    block->valid = VALID;
+    block->tag = _get_tag(block_starting_address);
+    block->counter = 0;
 }
 
-unsigned char read_byte(unsigned int address)
-{
+/* Como la cache esta implementada con Write Through y no-write allocate, si
+escribimos en la cache, esto nos garantiza que el bloque correspondiente a la
+direccion se encuentra en la misma. */
+void write_tocache(unsigned int address, unsigned char value) {
+    unsigned int tag = _get_tag(address);
+    unsigned int set = find_set(address);
+    unsigned int offset = get_offset(address);
+    int way = compare_tag(tag, set);
+    cache_block_t *block = &cache.blocks[set][way];
+    block->data[offset] = value;
+    block->counter = 0;
+}
+
+unsigned char read_byte(unsigned int address) {
     unsigned int tag = _get_tag(address);
     unsigned int set = find_set(address);
     int way = compare_tag(tag, set);
     unsigned char byte_read;
     bool is_in_cache = way >= 0;
-
     _update_blocks_counter_from_set(set);
-    if (is_in_cache) 
-    {
-        unsigned int offset = get_offset(address);
-        byte_read = _read_from_cache(set, way, offset);
-    } else {
+    if (!is_in_cache) {
         unsigned int block_num = _get_block(address);
         way = select_oldest(set);
         read_tocache(block_num, way, set);
-        byte_read = main_memory.data[address];
     }
+
+    unsigned int offset = get_offset(address);
+    byte_read = _read_from_cache(set, way, offset);
     _update_cache_count(is_in_cache);
 
+    printf("READ: %d -> %u \n", address, byte_read);
     return byte_read;
 }
 
-/*Como la cache esta implementada con Write Through y no-write allocate, si escribimos
-en la cache, esto nos garantiza que el bloque correspondiente a la direccion se encuentra
-en la misma. */
-void write_tocache(unsigned int address, unsigned char value) 
-{
-    unsigned int tag = _get_tag(address);
-    unsigned int set = find_set(address);
-    unsigned int offset = get_offset(address);
-    int way = compare_tag(tag, set);
-    cache_block_t block = cache.blocks[set][way];
-    block.data[offset] = value;
-    block.counter = 0;
-}
-
-void write_byte(unsigned int address, unsigned char value)
-{
+void write_byte(unsigned int address, unsigned char value) {
     unsigned int tag = _get_tag(address);
     unsigned int set = find_set(address);
     int way = compare_tag(tag, set);
@@ -165,47 +103,47 @@ void write_byte(unsigned int address, unsigned char value)
 
     _update_blocks_counter_from_set(set);
     main_memory.data[address] = value;
-    if (is_in_cache) 
-    {
+    if (is_in_cache) {
         write_tocache(address, value);
     }
     _update_cache_count(is_in_cache);
+    printf("WRITE: %d <- %u \n", address, value);
 }
 
-
+float get_miss_rate() {
+    if (cache.miss_count == 0) return 0;
+    int total_count = cache.miss_count + cache.hit_count;
+    float mr = cache.miss_count / (float)total_count * 100;
+    printf("MISS_RATE: %0.2f%% \n", mr);
+    return mr;
+}
 
 /* Funciones auxiliares */
 
-unsigned char _read_from_cache(unsigned int set, unsigned int way, unsigned int offset) {
+unsigned char _read_from_cache(unsigned int set, unsigned int way,
+                               unsigned int offset) {
     cache_block_t block = cache.blocks[set][way];
     block.counter = 0;
+
     return block.data[offset];
 }
 
-void _update_blocks_counter_from_set(unsigned int set) 
-{
-    cache_block_t* blocks_in_set = cache.blocks[set];
-    for (size_t i = 0; i < N_WAYS; i++) 
-    {
+void _update_blocks_counter_from_set(unsigned int set) {
+    cache_block_t *blocks_in_set = cache.blocks[set];
+    for (size_t i = 0; i < N_WAYS; i++) {
         blocks_in_set[i].counter += 1;
     }
 }
 
-unsigned int _get_block(unsigned int address) 
-{
-    return address / BLOCK_SIZE;
-}
+unsigned int _get_block(unsigned int address) { return address / BLOCK_SIZE; }
 
-unsigned int _get_tag(unsigned int address) 
-{
+unsigned int _get_tag(unsigned int address) {
     unsigned int int_for_set_and_offset = pow(2, INDEX_SIZE + OFFSET_SIZE);
     return address / int_for_set_and_offset;
 }
 
-void _update_cache_count(bool data_is_in_cache) 
-{
-    if (data_is_in_cache) 
-    {
+void _update_cache_count(bool data_is_in_cache) {
+    if (data_is_in_cache) {
         cache.hit_count += 1;
     } else {
         cache.miss_count += 1;
