@@ -1,6 +1,9 @@
+li $t2, 1
 li $t0, 1
-li $t1, 4
+li $t1, 7
 jreg $t1, $t0
-li $t3, 1
-li $t4, 1
-li $t5, 1
+addi $t2, $t2, 1
+addi $t2, $t2, 1
+addi $t2, $t2, 1
+addi $t2, $t2, 1
+addi $t2, $t2, 1
