@@ -85,5 +85,5 @@
 		{"from": "MuxMem", "out": "Out", "to": "RegBank", "in": "WriteData", "end": {"x": 250, "y": 297}, "points": [{"x": 600, "y": 287}, {"x": 600, "y": 400}, {"x": 240, "y": 400}, {"x": 240, "y": 297}]}
 	],
 	"reg_names": ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"],
-	"instructions": "andi.set"
+	"instructions": "andi_unicycle.set"
 }
