@@ -29,9 +29,10 @@
 		"ForkReg":    {"type": "Fork", "x": 335, "y": 281, "size": 32, "in": "In", "out": ["Out1", "Out2"]},
 		"DataMem":    {"type": "DataMemory", "latency": 400, "x": 480, "y": 242, "size": 100, "address": "Address", "write_data": "WriteData", "out": "ReadData", "mem_read": "MemRead", "mem_write": "MemWrite"},
 		"MuxMem":     {"type": "Multiplexer", "latency": 15, "x": 580, "y": 270, "size": 32, "sel": "MemToReg", "in": ["0", "1"], "out": "Out", "desc": {"default": "Selects the result of the ALU or the value read from memory to write to the destination register (WriteData).", "pt": "Selecciona o resultado da ALU ou o valor lido da memória para escrever no registo de destino (WriteData)."}},
+		
 		"MuxJumpAddress":  {"type": "Multiplexer", "latency": 15, "x": 560, "y": 100, "size": 32, "sel": "Branch", "in": ["0", "1"], "out": "Out", "desc": {"default": "Selects the jump address between the result of the ALU (Branch = 1) and the target field from the J instruction (Branch = 0)", "pt": ""}},
 		"ShiftALUJump":  {"type": "ShiftLeft", "x": 540, "y": 160, "in": {"id": "In", "size": 32}, "out": {"id": "Out", "size": 32}, "amount": 2, "desc": {"default": "The 2 less significant bits of the addresses of the instructions are always 00 (the addresses are multiples of 4). As such, these bits are not included in the instruction's target field.", "pt": ""}},
-		"ForkBranchSignal": {"type": "Fork", "x": 420, "y": 130, "size": 1, "in": "In", "out": ["Out0", "Out1"]}
+		"ForkBranchSignal": {"type": "Fork", "x": 420, "y": 110, "size": 1, "in": "In", "out": ["Out0", "Out1"]}
 	},
 	"wires": [
 		{"from": "PC", "out": "PC", "to": "ForkPC", "in": "In"},
@@ -84,13 +85,14 @@
 		{"from": "DataMem", "out": "ReadData", "to": "MuxMem", "in": "1"},
 		{"from": "ForkMem", "out": "Out2", "to": "MuxMem", "in": "0", "points": [{"x": 470, "y": 352}, {"x": 570, "y": 352}, {"x": 570, "y": 281}]},
 		{"from": "MuxMem", "out": "Out", "to": "RegBank", "in": "WriteData", "end": {"x": 250, "y": 297}, "points": [{"x": 600, "y": 287}, {"x": 600, "y": 400}, {"x": 240, "y": 400}, {"x": 240, "y": 297}]},
-		{"from": "ForkMem", "out": "Out3", "to": "ShiftALUJump", "in": "In"},
-		{"from": "ConcatJump", "out": "Out", "to": "MuxJumpAddress", "in": "0"},
-		{"from": "ShiftALUJump", "out": "Out", "to": "MuxJumpAddress", "in": "1"},
-		{"from": "MuxJumpAddress", "out": "Out", "to": "MuxJump", "in": "1"},
-		{"from": "ForkBranchSignal", "out": "Out1", "to": "MuxJumpAddress", "in": "Branch"},
+
+		{"from": "ForkMem", "out": "Out3", "to": "ShiftALUJump", "in": "In", "points": [{"x": 470, "y": 260}, {"x": 475, "y": 260}, {"x": 475, "y": 180}]},
+		{"from": "ConcatJump", "out": "Out", "to": "MuxJumpAddress", "in": "0", "points":[{"x": 520, "y": 40}, {"x": 520, "y": 111}]},
+		{"from": "ShiftALUJump", "out": "Out", "to": "MuxJumpAddress", "in": "1", "points": [{"x": 600, "y": 180}, {"x": 600, "y": 145}, {"x": 550, "y": 145}, {"x": 550, "y": 122}]},
+		{"from": "MuxJumpAddress", "out": "Out", "to": "MuxJump", "in": "1", "points": [{"x": 577, "y":117}, {"x": 577, "y": 40}]},
+		{"from": "ForkBranchSignal", "out": "Out1", "to": "MuxJumpAddress", "in": "Branch", "points": [{"x": 420, "y": 96}, {"x": 567, "y": 96}]},
 		{"from": "ForkBranchSignal", "out": "Out0", "to": "AndBranch", "in": "Branch"},
-		{"from": "Control", "out": "Branch", "to": "ForkBranchSignal", "in": "In"},
+		{"from": "Control", "out": "Branch", "to": "ForkBranchSignal", "in": "In", "start": {"x": 280, "y": 130}, "points": [{"x": 420, "y": 130}, {"x": 420, "y": 110}]},
 	],
 	"reg_names": ["zero", "at", "v0", "v1", "a0", "a1", "a2", "a3", "t0", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7", "t8", "t9", "k0", "k1", "gp", "sp", "fp", "ra"],
 	"instructions": "j_unicycle.set"
