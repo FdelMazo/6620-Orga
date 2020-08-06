@@ -1,2 +1,2 @@
-li $t0, 3
-andi $t1, $t0, 1
+li $t0, 7
+andi $t1, $t0, 10
