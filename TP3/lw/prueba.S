@@ -6,4 +6,4 @@
 .text
 	li $t0, uno
 	li $t1, 4
-	lws $t2, $t1, 1, $t0
+	lws $t2, $t1, 2, $t0

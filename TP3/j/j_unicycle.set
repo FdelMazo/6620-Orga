@@ -36,7 +36,7 @@
 		"0": {"RegDst": 1, "RegWrite": 1, "ALUOp": 2, "ALUSrc": 0, "MemToReg": 0},
 		"8": {"RegDst": 0, "RegWrite": 1, "ALUOp": 0, "ALUSrc": 1, "MemToReg": 0},
 		"2": {"Jump": 1},
-		"3": {"ALUSrc": 0, "Jump": 1, "ALUOp": 0},
+		"3": {"ALUSrc": 0, "Jump": 1, "Branch": 1, "ALUOp": 0},
 		"4": {"ALUOp": 1, "ALUSrc": 0, "Branch": 1},
 		"35": {"ALUOp": 0, "ALUSrc": 1, "RegDst": 0, "RegWrite": 1, "MemRead": 1, "MemWrite": 0, "MemToReg": 1},
 		"43": {"ALUOp": 0, "ALUSrc": 1, "RegDst": 0, "RegWrite": 0, "MemRead": 0, "MemWrite": 1, "MemToReg": 0}
